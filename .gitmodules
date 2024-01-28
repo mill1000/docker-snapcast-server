@@ -1,0 +1,3 @@
+[submodule "snapcast"]
+	path = snapcast
+	url = https://github.com/badaix/snapcast.git
