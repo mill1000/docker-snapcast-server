@@ -1,3 +1,7 @@
 [submodule "snapcast"]
 	path = snapcast
 	url = https://github.com/badaix/snapcast.git
+[submodule "shairport-sync"]
+	path = shairport-sync
+	url = https://github.com/mikebrady/shairport-sync.git
+	branch = 4.3.2
