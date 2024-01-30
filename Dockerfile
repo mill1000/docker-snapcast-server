@@ -16,23 +16,29 @@ RUN cd build && cmake --build . && cmake --install . --prefix /snapcast-install
 # Shairport-sync build image
 FROM build-base AS shairport-sync-build
 RUN apk add --update popt-dev libconfig-dev openssl-dev
+# ALAC Depdency
+WORKDIR /alac
+COPY alac .
+RUN autoreconf -fi && ./configure
+RUN make && make install && make install DESTDIR=/alac-install
+# Shairport-sync
 WORKDIR /shairport-sync
 COPY shairport-sync .
-RUN autoreconf -fi && ./configure --sysconfdir=/etc --with-soxr --with-avahi --with-ssl=openssl --with-metadata -with-stdout
-# --with-apple-alac
+RUN autoreconf -fi && ./configure --sysconfdir=/etc --with-soxr --with-avahi --with-ssl=openssl --with-metadata --with-apple-alac -with-stdout
 RUN make && make install DESTDIR=/shairport-sync-install
 
 # Run image
 FROM alpine:latest
 COPY --from=snapcast-sync-build /snapcast-install /
 COPY --from=shairport-sync-build /shairport-sync-install /
+COPY --from=shairport-sync-build /alac-install /
 RUN apk add --update tini popt soxr libconfig libvorbis opus flac alsa-lib libgcc libstdc++ expat avahi-libs
 ENV OPTIONS=
 # HTTP RPC
-EXPOSE 1780
 # TCP RPC
-EXPOSE 1705 
 # Stream
+EXPOSE 1780
+EXPOSE 1705 
 EXPOSE 1704
 ENTRYPOINT ["/sbin/tini", "--"]
 CMD ["/bin/sh", "-c", "/bin/snapserver $OPTIONS"]
