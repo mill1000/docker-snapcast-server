@@ -8,3 +8,7 @@
 [submodule "alac"]
 	path = alac
 	url = https://github.com/mikebrady/alac.git
+[submodule "librespot"]
+	path = librespot
+	url = https://github.com/librespot-org/librespot.git
+	branch = v0.4.2

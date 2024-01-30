@@ -27,21 +27,29 @@ COPY shairport-sync .
 RUN autoreconf -fi && ./configure --sysconfdir=/etc --with-soxr --with-avahi --with-ssl=openssl --with-metadata --with-apple-alac -with-stdout
 RUN make && make install DESTDIR=/shairport-sync-install
 
+# Librespot build image
+FROM build-base AS librespot-build
+RUN apk add --update rust cargo
+WORKDIR /librespot
+COPY librespot .
+# Patch taken from https://git.alpinelinux.org/aports/commit/?id=8adc8c00b84b9f87b5b22dcc7cac5644f42974c0
+COPY librespot.patch .
+RUN patch < librespot.patch && cargo build --release --no-default-features 
+
 # Run image
 FROM alpine:latest
 ARG DATADIR=/var/lib/snapserver
 COPY --from=snapcast-sync-build /snapcast-install /
 COPY --from=shairport-sync-build /shairport-sync-install /
 COPY --from=shairport-sync-build /alac-install /
+COPY --from=librespot-build /librespot/target/release/librespot /bin/librespot
 RUN apk add --update tini popt soxr libconfig libvorbis opus flac alsa-lib libgcc libstdc++ expat avahi-libs
 RUN adduser -D -H snapserver
 RUN mkdir -p $DATADIR && chown snapserver:snapserver $DATADIR
 USER snapserver
 ENV OPTIONS=
 ENV DATADIR=$DATADIR
-# HTTP RPC
-# TCP RPC
-# Stream
+# HTTP RPC = 1780, TCP RPC = 1705, Stream = 1704
 EXPOSE 1780
 EXPOSE 1705 
 EXPOSE 1704
