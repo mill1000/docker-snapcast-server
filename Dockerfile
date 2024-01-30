@@ -26,7 +26,7 @@ RUN make && make install DESTDIR=/shairport-sync-install
 FROM alpine:latest
 COPY --from=snapcast-sync-build /snapcast-install /
 COPY --from=shairport-sync-build /shairport-sync-install /
-RUN apk add --update tini avahi popt soxr libconfig libvorbis opus flac alsa-lib libgcc libstdc++
+RUN apk add --update tini popt soxr libconfig libvorbis opus flac alsa-lib libgcc libstdc++ expat avahi-libs
 ENV OPTIONS=
 # HTTP RPC
 EXPOSE 1780
