@@ -29,11 +29,16 @@ RUN make && make install DESTDIR=/shairport-sync-install
 
 # Run image
 FROM alpine:latest
+ARG DATADIR=/var/lib/snapserver
 COPY --from=snapcast-sync-build /snapcast-install /
 COPY --from=shairport-sync-build /shairport-sync-install /
 COPY --from=shairport-sync-build /alac-install /
 RUN apk add --update tini popt soxr libconfig libvorbis opus flac alsa-lib libgcc libstdc++ expat avahi-libs
+RUN adduser -D -H snapserver
+RUN mkdir -p $DATADIR && chown snapserver:snapserver $DATADIR
+USER snapserver
 ENV OPTIONS=
+ENV DATADIR=$DATADIR
 # HTTP RPC
 # TCP RPC
 # Stream
@@ -41,4 +46,4 @@ EXPOSE 1780
 EXPOSE 1705 
 EXPOSE 1704
 ENTRYPOINT ["/sbin/tini", "--"]
-CMD ["/bin/sh", "-c", "/bin/snapserver $OPTIONS"]
+CMD ["/bin/sh", "-c", "/bin/snapserver --server.datadir=$DATADIR $OPTIONS"]
