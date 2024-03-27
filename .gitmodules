@@ -12,3 +12,6 @@
 	path = librespot
 	url = https://github.com/librespot-org/librespot.git
 	branch = v0.4.2
+[submodule "snapweb"]
+	path = snapweb
+	url = https://github.com/badaix/snapweb.git
