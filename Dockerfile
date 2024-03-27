@@ -10,9 +10,6 @@ FROM build-base AS snapcast-sync-build
 RUN apk add --update boost-dev libvorbis-dev opus-dev flac-dev expat-dev
 WORKDIR /snapcast
 COPY snapcast .
-# Patch to reduce log spam
-COPY snapcast.patch .
-RUN patch -p1 < snapcast.patch
 RUN mkdir build && cd build && cmake .. -DBUILD_SERVER=ON -DBUILD_CLIENT=OFF
 RUN cd build && cmake --build . && cmake --install . --prefix /snapcast-install
 
