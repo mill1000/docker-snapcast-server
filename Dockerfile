@@ -6,17 +6,22 @@ RUN apk add --update build-base autoconf automake libtool pkgconfig cmake
 RUN apk add --update soxr-dev avahi-dev alsa-lib-dev
 
 # Snapcast build image
-FROM build-base AS snapcast-sync-build
-RUN apk add --update boost-dev libvorbis-dev opus-dev flac-dev expat-dev
+FROM build-base AS snapcast-build
+RUN apk add --update npm boost-dev libvorbis-dev opus-dev flac-dev expat-dev
+# Snapweb dependency
+WORKDIR /snapweb
+COPY snapweb .
+RUN npm ci && npm run build
+# Snapcast
 WORKDIR /snapcast
 COPY snapcast .
-RUN mkdir build && cd build && cmake .. -DBUILD_SERVER=ON -DBUILD_CLIENT=OFF
+RUN mkdir build && cd build && cmake .. -DBUILD_SERVER=ON -DSNAPWEB_DIR=/snapweb/dist -DBUILD_CLIENT=OFF
 RUN cd build && cmake --build . && cmake --install . --prefix /snapcast-install
 
 # Shairport-sync build image
 FROM build-base AS shairport-sync-build
 RUN apk add --update popt-dev libconfig-dev openssl-dev
-# ALAC Depdency
+# ALAC dependency
 WORKDIR /alac
 COPY alac .
 RUN autoreconf -fi && ./configure
@@ -39,7 +44,7 @@ RUN patch < librespot.patch && cargo build --release --no-default-features
 # Run image
 FROM alpine:latest
 ARG DATADIR=/var/lib/snapserver
-COPY --from=snapcast-sync-build /snapcast-install /
+COPY --from=snapcast-build /snapcast-install /
 COPY --from=shairport-sync-build /shairport-sync-install /
 COPY --from=shairport-sync-build /alac-install /
 COPY --from=librespot-build /librespot/target/release/librespot /bin/librespot
