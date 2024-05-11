@@ -51,9 +51,8 @@ COPY --from=librespot-build /librespot/target/release/librespot /bin/librespot
 RUN apk add --update tini popt soxr libconfig libvorbis opus flac alsa-lib libgcc libstdc++ expat avahi-libs
 # Snapcast UPnP plugin
 RUN apk add --update python3 pipx
-WORKDIR /snapcast-upnp
-COPY snapcast-upnp .
-RUN pipx install .
+COPY snapcast-upnp /snapcast-upnp
+RUN PIPX_HOME=/opt/pipx PIPX_BIN_DIR=/usr/local/bin PIPX_MAN_DIR=/usr/local/share/man pipx install /snapcast-upnp
 RUN adduser -D -H snapserver
 RUN mkdir -p $DATADIR && chown snapserver:snapserver $DATADIR
 RUN mkdir -p /streams && chown snapserver:snapserver /streams
