@@ -49,6 +49,11 @@ COPY --from=shairport-sync-build /shairport-sync-install /
 COPY --from=shairport-sync-build /alac-install /
 COPY --from=librespot-build /librespot/target/release/librespot /bin/librespot
 RUN apk add --update tini popt soxr libconfig libvorbis opus flac alsa-lib libgcc libstdc++ expat avahi-libs
+# Snapcast UPnP plugin
+RUN apk add --update python3 pipx
+WORKDIR /snapcast-upnp
+COPY snapcast-upnp .
+RUN pipx install .
 RUN adduser -D -H snapserver
 RUN mkdir -p $DATADIR && chown snapserver:snapserver $DATADIR
 RUN mkdir -p /streams && chown snapserver:snapserver /streams
