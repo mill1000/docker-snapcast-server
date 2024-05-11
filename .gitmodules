@@ -15,3 +15,6 @@
 [submodule "snapweb"]
 	path = snapweb
 	url = https://github.com/badaix/snapweb.git
+[submodule "snapcast-upnp"]
+	path = snapcast-upnp
+	url = https://github.com/mill1000/snapcast-upnp.git
