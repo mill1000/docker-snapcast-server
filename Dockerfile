@@ -34,12 +34,10 @@ RUN make && make install DESTDIR=/shairport-sync-install
 
 # Librespot build image
 FROM build-base AS librespot-build
-RUN apk add --update rust cargo
+RUN apk add --update rust cargo rust-bindgen clang-libclang
 WORKDIR /librespot
 COPY librespot .
-# Patch taken from https://git.alpinelinux.org/aports/commit/?id=8adc8c00b84b9f87b5b22dcc7cac5644f42974c0
-COPY librespot.patch .
-RUN patch < librespot.patch && cargo build --release --no-default-features 
+RUN cargo build --release --no-default-features --features="with-avahi"
 
 # Run image
 FROM alpine:latest
