@@ -7,7 +7,7 @@ RUN apk add --update soxr-dev avahi-dev alsa-lib-dev
 
 # Snapcast build image
 FROM build-base AS snapcast-build
-RUN apk add --update npm boost-dev libvorbis-dev opus-dev flac-dev expat-dev
+RUN apk add --update npm boost-dev libvorbis-dev opus-dev flac-dev expat-dev openssl-dev
 # Snapweb dependency
 WORKDIR /snapweb
 COPY snapweb .
@@ -46,7 +46,7 @@ COPY --from=snapcast-build /snapcast-install /
 COPY --from=shairport-sync-build /shairport-sync-install /
 COPY --from=shairport-sync-build /alac-install /
 COPY --from=librespot-build /librespot/target/release/librespot /bin/librespot
-RUN apk add --update tini popt soxr libconfig libvorbis opus flac alsa-lib libgcc libstdc++ expat avahi-libs
+RUN apk add --update tini popt soxr libconfig libvorbis opus flac alsa-lib libgcc libstdc++ expat avahi-libs openssl
 # Snapcast UPnP plugin
 RUN apk add --update python3 pipx
 COPY snapcast-upnp /snapcast-upnp
