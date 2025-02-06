@@ -1,5 +1,5 @@
 # docker-snapcast-server
-Dockerfile for a Snapcast server with embedded shairport-sync and librespot based on Alpine linux.
+A Docker image for [Snapcast](https://github.com/badaix/snapcast) server with embedded shairport-sync and librespot based on Alpine linux.
 
 ## Minimal Compose Example
 ```yaml
