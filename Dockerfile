@@ -37,7 +37,7 @@ FROM build-base AS librespot-build
 RUN apk add --update rust cargo rust-bindgen clang-libclang
 WORKDIR /librespot
 COPY librespot .
-RUN cargo build --release --no-default-features --features="with-avahi"
+RUN cargo build --release --no-default-features --features="rustls-tls-native-roots with-avahi"
 
 # Run image
 FROM alpine:latest
