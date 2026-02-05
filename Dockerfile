@@ -46,7 +46,7 @@ COPY --from=snapcast-build /snapcast-install /
 COPY --from=shairport-sync-build /shairport-sync-install /
 COPY --from=shairport-sync-build /alac-install /
 COPY --from=librespot-build /librespot/target/release/librespot /bin/librespot
-RUN apk add --update tini popt soxr libconfig libvorbis opus flac alsa-lib libgcc libstdc++ expat avahi-libs openssl
+RUN apk add --update tini popt soxr libconfig libvorbis opus flac alsa-lib libgcc libstdc++ expat avahi-libs openssl doas
 # Snapcast UPnP plugin
 RUN apk add --update python3 pipx
 COPY snapcast-upnp /snapcast-upnp
@@ -54,12 +54,15 @@ RUN PIPX_HOME=/opt/pipx PIPX_BIN_DIR=/usr/local/bin PIPX_MAN_DIR=/usr/local/shar
 RUN adduser -D -H snapserver
 RUN mkdir -p $DATADIR && chown snapserver:snapserver $DATADIR
 RUN mkdir -p /streams && chown snapserver:snapserver /streams
+# Allow snapserver user to nice process
+RUN echo "permit nopass keepenv snapserver as root cmd /bin/nice" >> /etc/doas.d/snapserver-nice.conf
 USER snapserver
 ENV OPTIONS=
+ENV NICE=-10
 ENV DATADIR=$DATADIR
 # HTTP RPC = 1780, TCP RPC = 1705, Stream = 1704
 EXPOSE 1780
 EXPOSE 1705 
 EXPOSE 1704
 ENTRYPOINT ["/sbin/tini", "--"]
-CMD ["/bin/sh", "-c", "/bin/snapserver --server.datadir=$DATADIR $OPTIONS"]
+CMD ["/bin/sh", "-c", "doas /bin/nice -n $NICE /bin/snapserver --server.datadir=$DATADIR $OPTIONS"]
