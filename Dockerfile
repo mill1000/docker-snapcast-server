@@ -11,7 +11,7 @@ RUN apk add --update npm boost-dev libvorbis-dev opus-dev flac-dev expat-dev ope
 # Snapweb dependency
 WORKDIR /snapweb
 COPY snapweb .
-RUN npm ci && npm run build
+RUN npm install && npm ci && npm run build
 # Snapcast
 WORKDIR /snapcast
 COPY snapcast .
