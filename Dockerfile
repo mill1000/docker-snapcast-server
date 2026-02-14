@@ -15,8 +15,8 @@ RUN npm install && npm ci && npm run build
 # Snapcast
 WORKDIR /snapcast
 COPY snapcast .
-RUN mkdir build && cd build && cmake .. -DBUILD_SERVER=ON -DSNAPWEB_DIR=/snapweb/dist -DBUILD_CLIENT=OFF
-RUN cd build && cmake --build . && cmake --install . --prefix /snapcast-install
+RUN mkdir build && cd build && cmake .. -DCMAKE_INSTALL_PREFIX=/usr -DBUILD_SERVER=ON -DSNAPWEB_DIR=/snapweb/dist -DBUILD_CLIENT=OFF
+RUN cd build && cmake --build . && DESTDIR=/snapcast-install cmake --install .
 
 # Shairport-sync build image
 FROM build-base AS shairport-sync-build
@@ -39,18 +39,23 @@ WORKDIR /librespot
 COPY librespot .
 RUN cargo build --release --no-default-features --features="rustls-tls-native-roots with-avahi"
 
+# Snapcast-upnp build
+FROM alpine:latest AS snapcast-upnp-build
+RUN apk add --update python3 pipx
+WORKDIR /snapcast-upnp
+COPY snapcast-upnp .
+RUN PIPX_HOME=/opt/pipx PIPX_BIN_DIR=/usr/local/bin PIPX_MAN_DIR=/usr/local/share/man pipx install .
+
 # Run image
 FROM alpine:latest
 ARG DATADIR=/var/lib/snapserver
 COPY --from=snapcast-build /snapcast-install /
 COPY --from=shairport-sync-build /shairport-sync-install /
 COPY --from=shairport-sync-build /alac-install /
-COPY --from=librespot-build /librespot/target/release/librespot /bin/librespot
-RUN apk add --update tini popt soxr libconfig libvorbis opus flac alsa-lib libgcc libstdc++ expat avahi-libs openssl doas
-# Snapcast UPnP plugin
-RUN apk add --update python3 pipx
-COPY snapcast-upnp /snapcast-upnp
-RUN PIPX_HOME=/opt/pipx PIPX_BIN_DIR=/usr/local/bin PIPX_MAN_DIR=/usr/local/share/man pipx install /snapcast-upnp
+COPY --from=librespot-build /librespot/target/release/librespot /usr/local/bin/librespot
+COPY --from=snapcast-upnp-build /opt/pipx /opt/pipx
+COPY --from=snapcast-upnp-build /usr/local/bin/snapcast-upnp /usr/local/bin/snapcast-upnp
+RUN apk add --update tini popt soxr libconfig libvorbis opus flac alsa-lib libgcc libstdc++ expat avahi-libs openssl doas python3
 RUN adduser -D -H snapserver
 RUN mkdir -p $DATADIR && chown snapserver:snapserver $DATADIR
 RUN mkdir -p /streams && chown snapserver:snapserver /streams
@@ -65,4 +70,4 @@ EXPOSE 1780
 EXPOSE 1705 
 EXPOSE 1704
 ENTRYPOINT ["/sbin/tini", "--"]
-CMD ["/bin/sh", "-c", "doas /bin/nice -n $NICE /bin/snapserver --server.datadir=$DATADIR $OPTIONS"]
+CMD ["/bin/sh", "-c", "doas /bin/nice -n $NICE /usr/bin/snapserver --server.datadir=$DATADIR $OPTIONS"]
