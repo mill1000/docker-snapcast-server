@@ -4,14 +4,9 @@
 [submodule "shairport-sync"]
 	path = shairport-sync
 	url = https://github.com/mikebrady/shairport-sync.git
-	branch = 4.3.2
-[submodule "alac"]
-	path = alac
-	url = https://github.com/mikebrady/alac.git
 [submodule "librespot"]
 	path = librespot
 	url = https://github.com/librespot-org/librespot.git
-	branch = v0.4.2
 [submodule "snapweb"]
 	path = snapweb
 	url = https://github.com/badaix/snapweb.git

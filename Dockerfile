@@ -20,16 +20,11 @@ RUN cd build && cmake --build . && DESTDIR=/snapcast-install cmake --install .
 
 # Shairport-sync build image
 FROM build-base AS shairport-sync-build
-RUN apk add --update popt-dev libconfig-dev openssl-dev
-# ALAC dependency
-WORKDIR /alac
-COPY alac .
-RUN autoreconf -fi && ./configure
-RUN make && make install && make install DESTDIR=/alac-install
+RUN apk add --update popt-dev libconfig-dev openssl-dev ffmpeg-dev
 # Shairport-sync
 WORKDIR /shairport-sync
 COPY shairport-sync .
-RUN autoreconf -fi && ./configure --sysconfdir=/etc --with-soxr --with-avahi --with-ssl=openssl --with-metadata --with-apple-alac -with-stdout
+RUN autoreconf -fi && ./configure --sysconfdir=/etc --with-soxr --with-avahi --with-ssl=openssl --with-metadata --with-stdout --with-ffmpeg
 RUN make && make install DESTDIR=/shairport-sync-install
 
 # Librespot build image
@@ -51,11 +46,10 @@ FROM alpine:latest
 ARG DATADIR=/var/lib/snapserver
 COPY --from=snapcast-build /snapcast-install /
 COPY --from=shairport-sync-build /shairport-sync-install /
-COPY --from=shairport-sync-build /alac-install /
 COPY --from=librespot-build /librespot/target/release/librespot /usr/local/bin/librespot
 COPY --from=snapcast-upnp-build /opt/pipx /opt/pipx
 COPY --from=snapcast-upnp-build /usr/local/bin/snapcast-upnp /usr/local/bin/snapcast-upnp
-RUN apk add --update tini popt soxr libconfig libvorbis opus flac alsa-lib libgcc libstdc++ expat avahi-libs openssl doas python3
+RUN apk add --update tini popt soxr libconfig libvorbis opus flac alsa-lib libgcc libstdc++ expat avahi-libs openssl doas python3 ffmpeg-libavutil ffmpeg-libavcodec ffmpeg-libavformat
 RUN adduser -D -H snapserver
 RUN mkdir -p $DATADIR && chown snapserver:snapserver $DATADIR
 RUN mkdir -p /streams && chown snapserver:snapserver /streams
