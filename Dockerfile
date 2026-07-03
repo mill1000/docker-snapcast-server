@@ -24,7 +24,7 @@ RUN apk add --update popt-dev libconfig-dev openssl-dev ffmpeg-dev
 # Shairport-sync
 WORKDIR /shairport-sync
 COPY shairport-sync .
-RUN autoreconf -fi && ./configure --sysconfdir=/etc --with-soxr --with-avahi --with-ssl=openssl --with-metadata --with-stdout --with-ffmpeg
+RUN autoreconf -fi && ./configure --sysconfdir=/etc --with-soxr --with-avahi --with-ssl=openssl --with-metadata —with-metadata-pipe --with-stdout --with-ffmpeg
 RUN make && make install DESTDIR=/shairport-sync-install
 
 # Librespot build image
